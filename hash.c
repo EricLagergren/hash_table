@@ -14,14 +14,17 @@
 # define GROW_FACTOR 2.0
 #endif
 
+// null_freer is a noop free for when the owner of the table does not
+// want to free keys or values. Either we do this or we have a conditional
+// for every time we free an entry.
 #ifdef __GNUC__
-# define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+	static void null_freer(__attribute__((__unused__)) void *a) {}
 #else
-# define UNUSED(x) UNUSED_ ## x
+	static void null_freer(void* a) {
+		(void)a;
+	}
 #endif
 
-// null_freer is a noop free.
-static void null_freer(void* UNUSED(a)) {}
 
 // create_entry creates a newly-allocated entry.
 static Entry* create_entry(void *key, void *val) {
@@ -30,8 +33,9 @@ static Entry* create_entry(void *key, void *val) {
 		return NULL;
 	}
 	ent->empty = false;
-	ent->val = val;
-	ent->key = key;
+	ent->val   = val;
+	ent->key   = key;
+	ent->next  = NULL;
 	return ent;
 }
 
