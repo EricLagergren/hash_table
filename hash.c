@@ -14,7 +14,32 @@
 # define GROW_FACTOR 2.0
 #endif
 
-static Entry* create_entry(void *key, void *val);
+#ifdef __GNUC__
+# define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+# define UNUSED(x) UNUSED_ ## x
+#endif
+
+// null_freer is a noop free.
+static void null_freer(void* UNUSED(a)) {}
+
+// create_entry creates a newly-allocated entry.
+static Entry* create_entry(void *key, void *val) {
+	Entry *ent = calloc(1, sizeof(Entry));
+	if (ent == NULL) {
+		return NULL;
+	}
+	ent->val = val;
+	ent->key = key;
+	return ent;
+}
+
+// free_entry frees e with f.
+static void free_entry(Entry *e, ht_freer f) {
+	f(e->key);
+	f(e->val);
+	free(e);
+}
 
 // ht_new returns a pointer to a freshly-allocated hash table.
 // If size is 0 a small starting size will be used.
@@ -39,16 +64,6 @@ Table* ht_new(ht_hasher h, ht_comparator c, ht_freer f, size_t size) {
 	return t;
 }
 
-
-#ifdef __GNUC__
-# define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
-#else
-# define UNUSED(x) UNUSED_ ## x
-#endif
-
-// null_freer is a noop free.
-static void null_freer(void* UNUSED(a)) { return; }
-
 // ht_init initializes a hash table from the given storage.
 // It does not allocate any memory.
 void ht_init(Table *t, ht_hasher h, ht_comparator c, ht_freer f, size_t size) {
@@ -66,6 +81,7 @@ void ht_init(Table *t, ht_hasher h, ht_comparator c, ht_freer f, size_t size) {
 	t->freer = f;
 }
 
+// ht_free frees t.
 void ht_free(Table *t) {
 	Entry *ep = NULL;
 	Entry *head = NULL;
@@ -73,9 +89,7 @@ void ht_free(Table *t) {
 		head = t->buckets[i];
 		while ((ep = head) != NULL) {
 			head = head->next;
-			t->freer(ep->key);
-			t->freer(ep->val);
-			free(ep);
+			free_entry(ep, t->freer);
 		}
 	}
 	free(t->buckets);
@@ -109,16 +123,6 @@ int ht_set(Table *t, void *key, void *val) {
 	}
 	++t->nitems;
 	return 0;
-}
-
-static Entry* create_entry(void *key, void *val) {
-	Entry *ent = calloc(1, sizeof(Entry));
-	if (ent == NULL) {
-		return NULL;
-	}
-	ent->val = val;
-	ent->key = key;
-	return ent;
 }
 
 // ht_has returns true if the key is found inside t.
