@@ -3,27 +3,30 @@
 #include "hash.h"
 
 uint64_t hasher(void *val) {
-	return (uint64_t)(val);
+	uint64_t x = (uint64_t)val;
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x);
+    return x;
 }
 
 bool compar(void *a, void *b) {
-	return (uint64_t)(a) == (uint64_t)(b);
+	return (long)(a) == (long)(b);
 }
 
 #define INT(v) ((void*)(v))
 
 int main(void) {
-	Table *t = ht_new(hasher, compar, 0);
+	Table *t = ht_new(hasher, compar, NULL, 100);
 
-	uint64_t v;
-
-	ht_set(t, INT(1), INT(1));
-	v = (uint64_t)ht_get(t, INT(1));
-	printf("%lu\n", v);
-
-	ht_set(t, INT(2), INT(2));
-	v = (uint64_t)ht_get(t, INT(2));
-	printf("%lu\n", v);
+	long v;
+	for (long i = 1; i < 100; ++i) {
+		ht_set(t, INT(i), INT(i));
+		v = (long)ht_get(t, INT(i));
+		if (v != i) {
+			printf("wanted: %ld, got: %ld\n", i, v);
+		}
+	}
 
 	ht_free(t);
 }
