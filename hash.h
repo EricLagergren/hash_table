@@ -6,7 +6,7 @@ typedef struct Entry Entry;
 struct Entry {
 	void *key;
 	void *val;
-	uint64_t hash;
+	bool empty;
 	Entry *next;
 };
 
@@ -37,3 +37,4 @@ int    ht_resize(Table *t);
 int    ht_set(Table *t, void *key, void *val);
 bool   ht_has(Table *t, void *key);
 void*  ht_get(Table *t, void *key);
+void   ht_delete(Table *t, void *key);

@@ -29,6 +29,7 @@ static Entry* create_entry(void *key, void *val) {
 	if (ent == NULL) {
 		return NULL;
 	}
+	ent->empty = false;
 	ent->val = val;
 	ent->key = key;
 	return ent;
@@ -132,7 +133,7 @@ bool ht_has(Table *t, void *key) {
 
 	Entry *ep = t->buckets[pos];
 	while (ep != NULL) {
-		if (t->compar(ep->key, key)) {
+		if (t->compar(ep->key, key) && !ep->empty) {
 			return true;
 		}
 		ep = ep->next;
@@ -148,7 +149,7 @@ void *ht_get(Table *t, void *key) {
 
 	Entry *ep = t->buckets[pos];
 	while (ep != NULL) {
-		if (t->compar(ep->key, key)) {
+		if (t->compar(ep->key, key) && !ep->empty) {
 			return ep->val;
 		}
 		ep = ep->next;
@@ -191,4 +192,30 @@ int ht_resize(Table *t) {
 	}
 	free(nb);
 	return 0;
+}
+
+// ht_delete removes an entry from the table.
+void ht_delete(Table *t, void* key) {
+	uint64_t hash = t->hasher(key);
+	size_t pos = hash % t->nbuckets;
+
+	Entry *prev = NULL;
+	Entry *ep = t->buckets[pos];
+	while (ep != NULL) {
+		if (t->compar(ep->key, key)) {
+
+			// Overflow bucket. Free it and relink list.
+			if (prev != NULL) {
+				Entry *next = ep->next;
+				free_entry(ep, t->freer);
+				prev->next = next;
+			} else {
+				ep->empty = true;
+			}
+			--t->nitems;
+			return;
+		}
+		prev = ep;
+		ep = ep->next;
+	}
 }

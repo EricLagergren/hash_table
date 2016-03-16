@@ -46,6 +46,9 @@ void *ht_get(Table *t, void *key);
 
 // ht_resize resizes the table to GROW_FACTOR * the current size.
 int ht_resize(Table *t);
+
+// ht_delete removes an entry from the table.
+void ht_delete(Table *t, void* key);
 ```
 
 ## License

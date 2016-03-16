@@ -28,5 +28,11 @@ int main(void) {
 		}
 	}
 
+	ht_delete(t, INT(5));
+	v = (long)ht_get(t, INT(5));
+	if (v != 0) {
+		printf("wanted 0, got: %ld\n", v);
+	}
+
 	ht_free(t);
 }
