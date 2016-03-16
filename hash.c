@@ -18,11 +18,11 @@
 // want to free keys or values. Either we do this or we have a conditional
 // for every time we free an entry.
 #ifdef __GNUC__
-	static void null_freer(__attribute__((__unused__)) void *a) {}
+ static void null_freer(__attribute__((__unused__)) void *a) {}
 #else
-	static void null_freer(void* a) {
-		(void)a;
-	}
+ static void null_freer(void* a) {
+	(void)a;
+ }
 #endif
 
 
