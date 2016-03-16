@@ -206,9 +206,8 @@ void ht_delete(Table *t, void* key) {
 
 			// Overflow bucket. Free it and relink list.
 			if (prev != NULL) {
-				Entry *next = ep->next;
+				prev->next = ep->next;
 				free_entry(ep, t->freer);
-				prev->next = next;
 			} else {
 				ep->empty = true;
 			}
