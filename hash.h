@@ -24,6 +24,8 @@ typedef struct {
 	Entry 		  **buckets;
 	size_t 		  nbuckets;
 	size_t 		  nitems;
+	size_t 		  ncolls;
+
 	ht_hasher 	  hasher;
 	ht_comparator compar;
 	ht_freer 	  freer;

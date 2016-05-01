@@ -11,7 +11,10 @@ main: $(SRC)
 lib: $(SRC)
 	$(CC) $(CFLAGS) -O -g -c $^
 
-.PHONY: main
+test: $(SRC)
+	$(CC) $(CFLAGS) testing.c $^ -o $@ -lm
+
+.PHONY: main lib test
 
 clean:
 	rm -f *.o $(BIN)

@@ -5,7 +5,7 @@
 // LOAD_FACTOR is the number of items to number of buckets ratio
 // that triggers a table resize.
 #ifndef LOAD_FACTOR
-# define LOAD_FACTOR 0.75
+# define LOAD_FACTOR 0.65
 #endif
 
 // GROW_FACTOR is how many times the current size the table grows
@@ -20,9 +20,7 @@
 #ifdef __GNUC__
  static void null_freer(__attribute__((__unused__)) void *a) {}
 #else
- static void null_freer(void* a) {
-	(void)a;
- }
+ static void null_freer(void* a) { (void)a; }
 #endif
 
 
@@ -113,12 +111,19 @@ int ht_set(Table *t, void *key, void *val) {
 	Entry **ep = &(t->buckets[pos]);
 	Entry *cur = NULL;
 	while ((cur = *ep) != NULL) {
+		// The simple case: empty bucket.
+		if (cur->empty) {
+			cur->val = val;
+			cur->empty = false;
+			return 0;
+		}
 		// If we can find it, replace the current entry...
-		if (cur->key != NULL && t->compar(cur->key, key)) {
+		if (t->compar(cur->key, key)) {
 			cur->val = val;
 			return 0;
 		}
 		ep = &cur->next;
+		++t->ncolls;
 	}
 
 	// ...otherwise allocate a new Entry and set that.
@@ -137,7 +142,7 @@ bool ht_has(Table *t, void *key) {
 
 	Entry *ep = t->buckets[pos];
 	while (ep != NULL) {
-		if (t->compar(ep->key, key) && !ep->empty) {
+		if (!ep->empty && t->compar(ep->key, key)) {
 			return true;
 		}
 		ep = ep->next;
@@ -153,7 +158,7 @@ void *ht_get(Table *t, void *key) {
 
 	Entry *ep = t->buckets[pos];
 	while (ep != NULL) {
-		if (t->compar(ep->key, key) && !ep->empty) {
+		if (!ep->empty && t->compar(ep->key, key)) {
 			return ep->val;
 		}
 		ep = ep->next;
@@ -167,6 +172,7 @@ int ht_resize(Table *t) {
 		return 0;
 	}
 
+	t->ncolls = 0;
 	size_t old_size = t->nbuckets;
 	size_t new_size = old_size * GROW_FACTOR;
 	t->nbuckets = new_size;
@@ -206,8 +212,7 @@ void ht_delete(Table *t, void* key) {
 	Entry *prev = NULL;
 	Entry *ep = t->buckets[pos];
 	while (ep != NULL) {
-		if (t->compar(ep->key, key)) {
-
+		if (!ep->empty && t->compar(ep->key, key)) {
 			// Overflow bucket. Free it and relink list.
 			if (prev != NULL) {
 				prev->next = ep->next;
