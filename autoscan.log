@@ -1,0 +1,15 @@
+autoscan: warning: missing AC_CHECK_FUNCS([gettimeofday]) wanted by: 
+	testing/hash-table-shootout/src/template.c:13
+autoscan: warning: missing AC_CHECK_HEADERS([sys/time.h]) wanted by: 
+	testing/hash-table-shootout/src/template.c:1
+autoscan: warning: missing AC_PROG_CXX wanted by: 
+	testing/hash-table-shootout/src/google_dense_hash_map.cc
+	testing/hash-table-shootout/src/boost_unordered_map.cc
+	testing/hash-table-shootout/src/google_sparse_hash_map.cc
+	testing/hash-table-shootout/src/qt_qhash.cc
+	testing/hash-table-shootout/src/stl_unordered_map.cc
+	testing/hash-table-shootout/Makefile:10
+	testing/hash-table-shootout/Makefile:13
+	testing/hash-table-shootout/Makefile:16
+	testing/hash-table-shootout/Makefile:19
+	testing/hash-table-shootout/Makefile:22

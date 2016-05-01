@@ -1,6 +1,6 @@
 #include <errno.h>
 
-#include "hash.h"
+#include "hashtable.h"
 
 // LOAD_FACTOR is the number of items to number of buckets ratio
 // that triggers a table resize.
