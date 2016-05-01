@@ -58,3 +58,6 @@ libtool
 m4
 missing
 stamp-h1
+.deps/
+.libs/
+Makefile.am
